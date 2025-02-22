@@ -1,9 +1,12 @@
 import streamlit as st
+import openai
 from openai import OpenAI
 # import os
 # import json
 
 #OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
+print(openai.__version__)
 OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
 MODEL="gpt-4o"
 client = OpenAI(api_key=OPENAI_API_KEY)
