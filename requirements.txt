@@ -1,2 +1,2 @@
 streamlit==1.41.1
-openai==1.51.0
+openai==1.52.0
