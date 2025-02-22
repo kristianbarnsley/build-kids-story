@@ -9,6 +9,7 @@ from openai import OpenAI
 print(openai.__version__)
 OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
 MODEL="gpt-4o"
+print(f"API Key: {OPENAI_API_KEY[:5]}********")
 client = OpenAI(api_key=OPENAI_API_KEY)
 
 def queryLLM(query, system_prompt, client, json=False):
