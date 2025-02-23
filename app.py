@@ -1,55 +1,5 @@
 import streamlit as st
-import openai
-from openai import OpenAI
-# import os
-# import json
-
-#OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-
-print(openai.__version__)
-OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
-MODEL="gpt-4o"
-print(f"API Key: {OPENAI_API_KEY[:5]}********")
-client = OpenAI(api_key=OPENAI_API_KEY)
-
-def queryLLM(query, system_prompt, client, json=False):
-    if json == True:
-        response = client.chat.completions.create(
-            model=MODEL,
-            response_format ={"type": "json_object"},
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": query}
-            ],
-            temperature=0.6,
-        )
-    else:
-        response = client.chat.completions.create(
-            model=MODEL,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": query}
-            ],
-            temperature=0.6,
-        )
-    return response.choices[0].message.content
-
-def getAnimals(country, client):
-    prompt = f"""Give me a list of 3 cultrally significant animals to the country of {country}. The animals can be real or mythological. These animals should be suitible to be charaters in a kids book. 
-    Reply only with a list of animals in list spereated by commas and using no quotation marks or underscores, such as: Animal1, Animal2, Animal3"""
-    system_prompt = "You are an AI assistant helping write a kids book"
-    response = queryLLM(query=prompt, system_prompt=system_prompt, client=client)
-    response = response.split(", ")
-    return response
-
-def getValues(country, client):
-    prompt = f"""Give me a list of 3 cultrally significant values to the country of {country}. The values should be important things that the large majority of people from {country} resonate with and 
-    would want to share with their child. These values should be suitible to be explained in a kids book and at some point will be used to overcome challenges the child in the book faces while lost in 
-    the forest. Reply only with a list of values in list spereated by commas and using no quotation marks or underscores, such as: Value1, Value2, Value3"""
-    system_prompt = "You are an AI assistant helping write a kids book"
-    response = queryLLM(query=prompt, system_prompt=system_prompt, client=client)
-    response = response.split(", ")
-    return response
+from textgeneration import *
 
 st.set_page_config(page_title="Build your own story!")
 
@@ -89,7 +39,6 @@ animals_values_generated = False
 
 if st.button("Suggest National Animals and Values"):
     if selected_countries:
-        
         animal_results = {}
         value_results = {}
         for i in range(0, len(selected_countries)):
@@ -100,8 +49,6 @@ if st.button("Suggest National Animals and Values"):
         st.session_state.animal_results = animal_results
         st.session_state.value_results = value_results
         st.session_state.step = max(st.session_state.step, 2)
-        #st.write("Suggested Animals:", animal_results)
-        #st.write("Suggested Values:", value_results)
     else:
         st.write("No countries selected yet")
 
@@ -115,4 +62,19 @@ if st.session_state.step >= 2:
 
 if st.session_state.step >= 3:
     if st.button("Generate Story!"):
-        st.write("Placeholder")
+        intro = generateIntro(name, gender, len(selected_countries))
+        st.text(intro)
+        i=0
+        animal_intro_sections = []
+        for country in selected_countries:
+            animal_intro = getAnimalIntro(st.session_state.animal_selections[country], name, country, st.session_state.value_selections[country], i)
+            animal_intro_sections.append(animal_intro)
+            st.text(animal_intro)
+            i += 1
+        lost_text = getLost(name)
+        st.text(lost_text)
+        story_so_far = intro
+        for section in animal_intro_sections:
+            story_so_far = story_so_far + section
+        story_so_far = story_so_far + lost_text
+        st.text(getEnding(name, story_so_far))
